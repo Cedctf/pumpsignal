@@ -13,8 +13,8 @@ async function main() {
 
     const ERC20 = await ethers.getContractFactory("ERC20");
 
-    // Deploy with name "USD Coin", symbol "USDC", initial supply 0 (users will mint)
-    const usdc = await ERC20.deploy("USD Coin", "USDC", 0);
+    // Deploy with name "USD Coin", symbol "USDC", 6 decimals, initial supply 0 (users will mint)
+    const usdc = await ERC20.deploy("USD Coin", "USDC", 6, 0);
     await usdc.waitForDeployment();
 
     const address = await usdc.getAddress();
