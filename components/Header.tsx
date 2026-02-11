@@ -21,7 +21,7 @@ const Header: React.FC = () => {
                         <Link href="/bracket" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Tournament</Link>
                         <Link href="/battle" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Battle</Link>
                         <Link href="/leaderboard" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Top Coins</Link>
-                        <ConnectButton chainStatus="icon" accountStatus="avatar" showBalance={false} />
+                        <ConnectButton/>
                     </div>
 
                     <div className="md:hidden">
