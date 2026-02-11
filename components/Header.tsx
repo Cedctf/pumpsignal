@@ -21,6 +21,7 @@ const Header: React.FC = () => {
                         <Link href="/bracket" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Tournament</Link>
                         <Link href="/battle?left=CBA&right=ZERO" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Battle</Link>
                         <Link href="/leaderboard" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Top Coins</Link>
+                        <Link href="/portfolio" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Portfolio</Link>
                         <ConnectButton />
                     </div>
 
@@ -38,6 +39,7 @@ const Header: React.FC = () => {
                     <Link href="/bracket" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Tournament</Link>
                     <Link href="/battle?left=CBA&right=ZERO" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Battle</Link>
                     <Link href="/leaderboard" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Top Coins</Link>
+                    <Link href="/portfolio" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Portfolio</Link>
                     <div className="w-full flex justify-center py-2">
                         <ConnectButton />
                     </div>
