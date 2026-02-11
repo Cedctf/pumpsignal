@@ -19,9 +19,9 @@ const Header: React.FC = () => {
 
                     <div className="hidden md:flex space-x-8 items-center">
                         <Link href="/bracket" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Tournament</Link>
-                        <Link href="/battle" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Battle</Link>
+                        <Link href="/battle?left=CBA&right=ZERO" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Battle</Link>
                         <Link href="/leaderboard" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Top Coins</Link>
-                        <ConnectButton/>
+                        <ConnectButton />
                     </div>
 
                     <div className="md:hidden">
@@ -36,10 +36,10 @@ const Header: React.FC = () => {
             {isMenuOpen && (
                 <div className="md:hidden bg-zinc-950 border-b border-emerald-500/20 px-4 py-4 space-y-4">
                     <Link href="/bracket" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Tournament</Link>
-                    <Link href="/battle" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Battle</Link>
+                    <Link href="/battle?left=CBA&right=ZERO" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Battle</Link>
                     <Link href="/leaderboard" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Top Coins</Link>
                     <div className="w-full flex justify-center py-2">
-                        <ConnectButton/>
+                        <ConnectButton />
                     </div>
                 </div>
             )}
