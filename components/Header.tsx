@@ -32,11 +32,7 @@ const Header: React.FC = () => {
                 </nav>
 
                 {/* Connect Wallet */}
-                <ConnectButton
-                    chainStatus="icon"
-                    accountStatus="avatar"
-                    showBalance={false}
-                />
+                <ConnectButton/>
             </div>
         </header>
     );
