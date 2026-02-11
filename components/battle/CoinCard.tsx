@@ -1,10 +1,10 @@
 import React from 'react';
-import Image from 'next/image';
+import TokenAvatar from '../TokenAvatar';
 
 export interface CoinData {
     name: string;
     symbol: string;
-    icon: string;
+    uri: string;           // ipfs:// URI for token avatar
     address: string;
     creator: string;
     age: string;
@@ -86,10 +86,10 @@ const CoinCard: React.FC<CoinCardProps> = ({ coin, side, isSelected, onSelect })
             {/* ── Header: Icon + Name + Address ── */}
             <div className="flex items-center gap-4 p-5 pb-0">
                 <div className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 ${isSelected
-                        ? accent === 'blue' ? 'border-blue-500' : 'border-purple-500'
-                        : 'border-zinc-700'
+                    ? accent === 'blue' ? 'border-blue-500' : 'border-purple-500'
+                    : 'border-zinc-700'
                     }`}>
-                    <Image src={coin.icon} alt={coin.name} fill className="object-cover" />
+                    <TokenAvatar uri={coin.uri} name={coin.name} symbol={coin.symbol} size={56} className="rounded-xl" />
                 </div>
                 <div className="min-w-0">
                     <h3 className="text-lg font-bold text-white truncate">{coin.name}</h3>
@@ -182,7 +182,7 @@ const CoinCard: React.FC<CoinCardProps> = ({ coin, side, isSelected, onSelect })
                     </div>
                     <div className="flex justify-between text-[10px] text-zinc-500 mt-2">
                         <span>{coin.bondingCurveEth} in bonding curve</span>
-                        <span>{coin.graduateTarget} to graduate</span>
+                        <span>{coin.graduateTarget}</span>
                     </div>
                 </div>
             </div>

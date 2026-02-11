@@ -2,82 +2,79 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import CoinCard, { CoinData } from './CoinCard';
 import BetPanel from './BetPanel';
+import { fetchCurves } from '../../lib/goldsky';
+import { scoreCurves, rankCurves } from '../../lib/scoring';
+import type { Curve } from '../../types';
 
-// Master coin directory — used for lookup by symbol
-const COIN_DIRECTORY: Record<string, CoinData> = {
-    PEPE: {
-        name: 'Pepe', symbol: 'PEPE', icon: 'https://ui-avatars.com/api/?name=PE&background=4ADE80&color=fff',
-        address: '0x6982...508f', creator: 'a4f2c1', age: '14d ago',
-        price: '$0.00000823', priceEth: '0.0000000042', ethUsd: '$1953.50',
-        change24h: '+12.5%', changeSinceLaunch: '+844.20%',
-        marketCap: '$3.45B', ath: '$8.21B', athProgress: 42,
-        volume24h: '$840.2M',
-        bondingCurveProgress: 100, bondingCurveEth: '85.0 ETH', graduateTarget: 'Graduated',
-    },
-    WIF: {
-        name: 'Wif', symbol: 'WIF', icon: 'https://ui-avatars.com/api/?name=WI&background=FCD34D&color=fff',
-        address: '0xf29b...dd4c', creator: '7b3e91', age: '30d ago',
-        price: '$2.45', priceEth: '0.001254', ethUsd: '$1953.50',
-        change24h: '-3.1%', changeSinceLaunch: '+1,220.00%',
-        marketCap: '$2.45B', ath: '$4.80B', athProgress: 51,
-        volume24h: '$420.5M',
-        bondingCurveProgress: 100, bondingCurveEth: '85.0 ETH', graduateTarget: 'Graduated',
-    },
-    BONK: {
-        name: 'Bonk', symbol: 'BONK', icon: 'https://ui-avatars.com/api/?name=BO&background=EA580C&color=fff',
-        address: '0x16b2...a881', creator: 'c9d4f2', age: '45d ago',
-        price: '$0.0000241', priceEth: '0.0000000123', ethUsd: '$1953.50',
-        change24h: '+5.8%', changeSinceLaunch: '+620.50%',
-        marketCap: '$1.62B', ath: '$2.90B', athProgress: 56,
-        volume24h: '$180.3M',
-        bondingCurveProgress: 100, bondingCurveEth: '85.0 ETH', graduateTarget: 'Graduated',
-    },
-    POPCAT: {
-        name: 'Popcat', symbol: 'POPCAT', icon: 'https://ui-avatars.com/api/?name=PC&background=E879F9&color=fff',
-        address: '0xed88...f3c4', creator: '5a1bc3', age: '7d ago',
-        price: '$0.42', priceEth: '0.000215', ethUsd: '$1953.50',
-        change24h: '+24.1%', changeSinceLaunch: '+3,400.00%',
-        marketCap: '$420.0M', ath: '$620.0M', athProgress: 68,
-        volume24h: '$45.2M',
-        bondingCurveProgress: 78, bondingCurveEth: '66.3 ETH', graduateTarget: '$52,180 to graduate',
-    },
-    MOG: {
-        name: 'Mog', symbol: 'MOG', icon: 'https://ui-avatars.com/api/?name=MO&background=3B82F6&color=fff',
-        address: '0xa113...d9e1', creator: 'e8f7a2', age: '21d ago',
-        price: '$0.0000012', priceEth: '0.00000000061', ethUsd: '$1953.50',
-        change24h: '+5.6%', changeSinceLaunch: '+290.00%',
-        marketCap: '$380.5M', ath: '$520.0M', athProgress: 73,
-        volume24h: '$32.1M',
-        bondingCurveProgress: 100, bondingCurveEth: '85.0 ETH', graduateTarget: 'Graduated',
-    },
-    GIGA: {
-        name: 'Gigachad', symbol: 'GIGA', icon: 'https://ui-avatars.com/api/?name=GI&background=57534E&color=fff',
-        address: '0x3c71...ab12', creator: '1627a1', age: '3d ago',
-        price: '$0.042', priceEth: '0.0000215', ethUsd: '$1953.50',
-        change24h: '+15.3%', changeSinceLaunch: '+144.20%',
-        marketCap: '$120.4M', ath: '$180.0M', athProgress: 67,
-        volume24h: '$12.5M',
-        bondingCurveProgress: 45, bondingCurveEth: '38.2 ETH', graduateTarget: '$43,954 to graduate',
-    },
-    BRETT: {
-        name: 'Brett', symbol: 'BRETT', icon: 'https://ui-avatars.com/api/?name=BR&background=2563EB&color=fff',
-        address: '0x8a4f...c2d7', creator: 'b5d9e3', age: '60d ago',
-        price: '$0.082', priceEth: '0.000042', ethUsd: '$1953.50',
-        change24h: '-1.2%', changeSinceLaunch: '+1,640.00%',
-        marketCap: '$820.0M', ath: '$1.50B', athProgress: 55,
-        volume24h: '$55.1M',
-        bondingCurveProgress: 100, bondingCurveEth: '85.0 ETH', graduateTarget: 'Graduated',
-    },
-    MYRO: {
-        name: 'Myro', symbol: 'MYRO', icon: 'https://ui-avatars.com/api/?name=MY&background=F97316&color=fff',
-        address: '0x3671...9eb9', creator: 'd2a4c1', age: '8d ago',
-        price: '$0.015', priceEth: '0.0000077', ethUsd: '$1953.50',
-        change24h: '+8.4%', changeSinceLaunch: '+450.00%',
-        marketCap: '$150.0M', ath: '$210.0M', athProgress: 71,
-        volume24h: '$18.7M',
-        bondingCurveProgress: 18, bondingCurveEth: '0.84 ETH', graduateTarget: '$43,954 to graduate',
-    },
+// ── Helpers ───────────────────────────────────────────────
+
+const SUPPLY = 1_000_000_000;
+
+const formatUsd = (n: number): string => {
+    if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+    if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+    if (n >= 1e3) return `$${(n / 1e3).toFixed(1)}K`;
+    if (n >= 1) return `$${n.toFixed(2)}`;
+    if (n >= 0.0001) return `$${n.toFixed(6)}`;
+    return `$${n.toExponential(2)}`;
 };
+
+const formatEth = (n: number): string => {
+    if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K ETH`;
+    if (n >= 1) return `${n.toFixed(2)} ETH`;
+    return `${n.toFixed(4)} ETH`;
+};
+
+const timeAgo = (ts: number): string => {
+    const secs = Math.floor(Date.now() / 1000 - ts);
+    if (secs < 60) return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+    return `${Math.floor(secs / 86400)}d ago`;
+};
+
+const shortAddr = (addr: string): string =>
+    addr.length > 10 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;
+
+/**
+ * Convert a Curve from the API into CoinData for the battle card
+ */
+const curveToCoinData = (c: Curve): CoinData => {
+    const priceUsd = Number(c.lastPriceUsd) || 0;
+    const priceEth = Number(c.lastPriceEth) || 0;
+    const volumeEth = Number(c.totalVolumeEth) || 0;
+    const mcap = priceUsd * SUPPLY;
+
+    // Rough ETH/USD from price ratio (guard divide-by-zero)
+    const ethUsd = priceEth > 0 ? priceUsd / priceEth : 0;
+
+    // Bonding curve: graduated = 100%, else estimate from volume (85 ETH = 100%)
+    const graduated = Boolean(c.graduated);
+    const bondingPct = graduated ? 100 : Math.min(100, Math.round((volumeEth / 85) * 100));
+
+    return {
+        name: c.name,
+        symbol: c.symbol,
+        uri: c.uri || '',
+        address: shortAddr(c.token || c.id),
+        creator: shortAddr(c.creator || ''),
+        age: timeAgo(Number(c.createdAt)),
+        price: formatUsd(priceUsd),
+        priceEth: priceEth.toPrecision(3),
+        ethUsd: ethUsd > 0 ? formatUsd(ethUsd) : '—',
+        change24h: '+0.0%',           // API doesn't provide 24h change; placeholder
+        changeSinceLaunch: '+0.0%',   // same — would need historical data
+        marketCap: formatUsd(mcap),
+        ath: formatUsd(mcap * 1.5),   // rough estimate (no ATH data in API)
+        athProgress: 67,               // placeholder
+        volume24h: formatEth(volumeEth),
+        bondingCurveProgress: bondingPct,
+        bondingCurveEth: `${volumeEth.toFixed(2)} ETH`,
+        graduateTarget: graduated ? 'Graduated' : `${(85 - volumeEth).toFixed(1)} ETH to graduate`,
+    };
+};
+
+// ── Countdown helper ──────────────────────────────────────
 
 const getSecondsToMidnight = () => {
     const now = new Date();
@@ -86,18 +83,45 @@ const getSecondsToMidnight = () => {
     return Math.floor((midnight.getTime() - now.getTime()) / 1000);
 };
 
+// ── Component ─────────────────────────────────────────────
+
 const BattleArena: React.FC = () => {
     const router = useRouter();
-    const leftSymbol = (router.query.left as string || 'PEPE').toUpperCase();
-    const rightSymbol = (router.query.right as string || 'WIF').toUpperCase();
+    const leftSymbol = (router.query.left as string || '').toUpperCase();
+    const rightSymbol = (router.query.right as string || '').toUpperCase();
 
-    const coinA = COIN_DIRECTORY[leftSymbol] || COIN_DIRECTORY.PEPE;
-    const coinB = COIN_DIRECTORY[rightSymbol] || COIN_DIRECTORY.WIF;
+    const [allCoins, setAllCoins] = useState<Map<string, CoinData>>(new Map());
+    const [defaultPair, setDefaultPair] = useState<[string, string]>(['', '']);
+    const [loading, setLoading] = useState(true);
 
     const [selectedSide, setSelectedSide] = useState<'left' | 'right' | null>(null);
     const [secondsLeft, setSecondsLeft] = useState(getSecondsToMidnight());
 
-    // Tick every second
+    // Fetch real coins
+    useEffect(() => {
+        fetchCurves()
+            .then((curves: Curve[]) => {
+                const scored = scoreCurves(curves);
+                const ranked = rankCurves(scored, 'score');
+
+                const coinMap = new Map<string, CoinData>();
+                ranked.forEach((c) => {
+                    const data = curveToCoinData(c);
+                    coinMap.set(c.symbol.toUpperCase(), data);
+                });
+
+                setAllCoins(coinMap);
+
+                // Use top 2 as default pair if no query params
+                if (ranked.length >= 2) {
+                    setDefaultPair([ranked[0].symbol.toUpperCase(), ranked[1].symbol.toUpperCase()]);
+                }
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    // Tick countdown every second
     useEffect(() => {
         const timer = setInterval(() => {
             setSecondsLeft(getSecondsToMidnight());
@@ -112,8 +136,34 @@ const BattleArena: React.FC = () => {
         return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
 
+    // Resolve coins
+    const resolvedLeft = leftSymbol || defaultPair[0];
+    const resolvedRight = rightSymbol || defaultPair[1];
+    const coinA = allCoins.get(resolvedLeft);
+    const coinB = allCoins.get(resolvedRight);
+
     const poolLeft = 124.5;
     const poolRight = 78.2;
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="w-10 h-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-zinc-500 text-sm">Loading battle data…</span>
+            </div>
+        );
+    }
+
+    if (!coinA || !coinB) {
+        return (
+            <div className="text-center py-20 text-zinc-500">
+                <p className="text-lg font-semibold mb-2">Coins not found</p>
+                <p className="text-sm">
+                    Could not find <span className="text-white font-bold">{resolvedLeft || '???'}</span> or <span className="text-white font-bold">{resolvedRight || '???'}</span> in the latest data.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-10">
