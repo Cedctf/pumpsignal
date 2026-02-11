@@ -50,6 +50,7 @@ contract CoinBattle {
         bool claimed;
     }
 
+    uint256 public rewardRate = 1000; // 1000 reward tokens per 1 USDC
     uint256 public battleCount;
     mapping(uint256 => Battle) public battles;
     mapping(uint256 => mapping(address => Bet)) public bets;
@@ -140,8 +141,8 @@ contract CoinBattle {
             b.totalPoolB += _amount;
         }
 
-        // Mint reward tokens to the bettor (1:1 with bet)
-        rewardToken.mint(msg.sender, _amount);
+        // Mint reward tokens to the bettor (rewardRate:1 with bet)
+        rewardToken.mint(msg.sender, _amount * rewardRate);
 
         emit BetPlaced(_battleId, msg.sender, _side, _amount);
     }
@@ -172,6 +173,14 @@ contract CoinBattle {
         require(b.status == Status.Open, "Not open");
         b.status = Status.Cancelled;
         emit BattleCancelled(_battleId);
+    }
+
+    /**
+     * @dev Update the reward token rate (tokens minted per 1 USDC bet).
+     */
+    function setRewardRate(uint256 _rate) external onlyOwner {
+        require(_rate > 0, "Rate must be > 0");
+        rewardRate = _rate;
     }
 
     /**
