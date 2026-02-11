@@ -39,7 +39,7 @@ const Header: React.FC = () => {
                     <Link href="/battle" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Battle</Link>
                     <Link href="/leaderboard" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Top Coins</Link>
                     <div className="w-full flex justify-center py-2">
-                        <ConnectButton chainStatus="icon" accountStatus="avatar" showBalance={false} />
+                        <ConnectButton/>
                     </div>
                 </div>
             )}
