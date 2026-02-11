@@ -50,7 +50,11 @@ contract CoinBattle {
         bool claimed;
     }
 
-    uint256 public rewardRate = 1000; // 1000 reward tokens per 1 USDC
+    uint256 public rewardRate = 1000 * 1e18; // 1000 CBA per 1 USDC
+    uint256 public constant REWARD_RATE_DENOMINATOR = 1e18;
+
+    address public treasury;
+
     uint256 public battleCount;
     mapping(uint256 => Battle) public battles;
     mapping(uint256 => mapping(address => Bet)) public bets;
@@ -65,7 +69,8 @@ contract CoinBattle {
         uint256 indexed battleId,
         address indexed user,
         Side side,
-        uint256 amount
+        uint256 amount,
+        uint256 fee
     );
     event BattleResolved(uint256 indexed battleId, Side winner);
     event BattleCancelled(uint256 indexed battleId);
@@ -80,10 +85,11 @@ contract CoinBattle {
         _;
     }
 
-    constructor(address _betToken, address _rewardToken) {
+    constructor(address _betToken, address _rewardToken, address _treasury) {
         owner = msg.sender;
         betToken = IERC20(_betToken);
         rewardToken = IERC20(_rewardToken);
+        treasury = _treasury; // Assigned treasury
     }
 
     /**
@@ -130,10 +136,22 @@ contract CoinBattle {
             );
         }
 
-        // Transfer USDC from user to this contract
+        // Calculate split (50/50)
+        uint256 treasuryShare = _amount / 2;
+        uint256 poolShare = _amount - treasuryShare;
+
+        // Transfer Treasury Share
+        if (treasuryShare > 0) {
+            require(
+                betToken.transferFrom(msg.sender, treasury, treasuryShare),
+                "Treasury transfer failed"
+            );
+        }
+
+        // Transfer Pool Share
         require(
-            betToken.transferFrom(msg.sender, address(this), _amount),
-            "Transfer failed"
+            betToken.transferFrom(msg.sender, address(this), poolShare),
+            "Pool transfer failed"
         );
 
         Bet storage userBet = bets[_battleId][msg.sender];
@@ -143,22 +161,24 @@ contract CoinBattle {
             userBet.side = _side;
         }
 
-        // Accumulate amount
-        userBet.amount += _amount;
+        // Accumulate amount (ONLY the pool share counts as the bet)
+        userBet.amount += poolShare;
         // Ensure not claimed (though should be false anyway for open battle)
         userBet.claimed = false;
 
         if (_side == Side.CoinA) {
-            b.totalPoolA += _amount;
+            b.totalPoolA += poolShare;
         } else {
-            b.totalPoolB += _amount;
+            b.totalPoolB += poolShare;
         }
 
-        // Mint reward tokens to the bettor (rewardRate:1 with bet)
-        // Mint based on the *new* amount being added
-        rewardToken.mint(msg.sender, _amount * rewardRate);
+        // Mint reward tokens to the bettor based on the POOL share (the robust bet)
+        rewardToken.mint(
+            msg.sender,
+            (poolShare * rewardRate) / REWARD_RATE_DENOMINATOR
+        ); // Adjusted for REWARD_RATE_DENOMINATOR
 
-        emit BetPlaced(_battleId, msg.sender, _side, _amount);
+        emit BetPlaced(_battleId, msg.sender, _side, poolShare, treasuryShare); // Updated event
     }
 
     /**
@@ -195,6 +215,14 @@ contract CoinBattle {
     function setRewardRate(uint256 _rate) external onlyOwner {
         require(_rate > 0, "Rate must be > 0");
         rewardRate = _rate;
+    }
+
+    /**
+     * @dev Update the treasury address.
+     */
+    function setTreasury(address _treasury) external onlyOwner {
+        require(_treasury != address(0), "Treasury cannot be 0");
+        treasury = _treasury;
     }
 
     /**

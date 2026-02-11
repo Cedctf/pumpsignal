@@ -5,7 +5,7 @@ const { ethers } = await network.connect({
     chainType: "l1",
 });
 
-const COIN_BATTLE = "0x68b817C0056B815e9280de759B33835CDabff6C4";
+const COIN_BATTLE = "0x0FA69EaDa5b2211B9E217C5C63b639B3a58bD3c0";
 
 const ABI = [
     "function setRewardRate(uint256 _rate) external",
@@ -21,12 +21,17 @@ async function main() {
     const currentRate = await coinBattle.rewardRate();
     console.log("Current reward rate:", currentRate.toString());
 
-    // USDC = 6 decimals, CBA = 18 decimals → 12 decimal gap
-    // To give 1000 CBA per 1 USDC: rate = 1000 * 10^12 = 10^15
-    const newRate = ethers.parseUnits("1000", 12); // 1000 * 1e12 = 1e15
-    console.log("Setting new rate to:", newRate.toString(), "(= 1000 CBA per 1 USDC)");
+    // We want 1 CBA (1e18) for every 0.001 USDC (1000 wei) -> 1000 CBA per 1 USDC (1e6)
+    // Contract logic: (amount * rate) / 1e18
+    // Target: output = (amount_usdc * 1000 * 1e18) / 1e6
+    // Formula: (amount * Rate) / 1e18 = amount * (1000 * 1e12)
+    // Rate / 1e18 = 1000 * 1e12
+    // Rate = 1000 * 1e30 = 1e33
 
-    const tx = await coinBattle.setRewardRate(newRate);
+    const RATE = BigInt("1000") * (10n ** 30n);
+    console.log("Setting new rate to:", RATE.toString(), "(= 1000 CBA per 1 USDC)");
+
+    const tx = await coinBattle.setRewardRate(RATE);
     console.log("Tx hash:", tx.hash);
     await tx.wait();
 

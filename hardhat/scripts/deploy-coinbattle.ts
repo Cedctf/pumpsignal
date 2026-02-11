@@ -18,8 +18,9 @@ async function main() {
     console.log("  betToken (USDC):", MOCK_USDC);
     console.log("  rewardToken (CBA):", CBA);
 
+    const TREASURY = "0xeEB323B5ba1001453aeFf3f28623D8832A82e146";
     const CoinBattle = await ethers.getContractFactory("CoinBattle");
-    const coinBattle = await CoinBattle.deploy(MOCK_USDC, CBA);
+    const coinBattle = await CoinBattle.deploy(MOCK_USDC, CBA, TREASURY);
     await coinBattle.waitForDeployment();
     const coinBattleAddress = await coinBattle.getAddress();
 

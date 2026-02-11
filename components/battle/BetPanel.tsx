@@ -50,8 +50,15 @@ const BetPanel: React.FC<BetPanelProps> = ({
         ? totalPool > 0 ? (totalPool / displayPoolLeft).toFixed(2) : '2.00'
         : totalPool > 0 ? (totalPool / displayPoolRight).toFixed(2) : '2.00';
 
-    const potentialPayout = betAmount ? (parseFloat(betAmount) * parseFloat(multiplier)).toFixed(2) : '0.00';
-    const cbaReward = betAmount ? (parseFloat(betAmount) * 1000).toLocaleString() : '0';
+    // 50% to Treasury, 50% to Pool
+    const effectiveBet = betAmount ? parseFloat(betAmount) / 2 : 0;
+
+    // Payout based on effective bet
+    const potentialPayout = effectiveBet ? (effectiveBet * parseFloat(multiplier)).toFixed(2) : '0.00';
+
+    // Reward based on effective bet (1000 CBA per 1 USDC of effective bet)
+    const cbaReward = effectiveBet ? (effectiveBet * 1000).toLocaleString() : '0';
+
     const accent = selectedSide === 'left' ? 'blue' : 'purple';
     const side = selectedSide === 'left' ? 1 : 2; // CoinA = 1, CoinB = 2
 
@@ -310,6 +317,10 @@ const BetPanel: React.FC<BetPanelProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    <p className="text-[10px] text-zinc-500 text-center mb-4 italic">
+                        *50% of deposit is added to the pool, 50% goes to the Treasury.
+                    </p>
 
                     {/* Stats */}
                     <div className="flex justify-between text-sm mb-2 px-1">

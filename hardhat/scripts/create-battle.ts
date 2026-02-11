@@ -6,7 +6,7 @@ const { ethers } = await network.connect({
 });
 
 // CoinBattle contract from networkConfig
-const COIN_BATTLE = "0x68b817C0056B815e9280de759B33835CDabff6C4";
+const COIN_BATTLE = "0x0FA69EaDa5b2211B9E217C5C63b639B3a58bD3c0";
 
 // CoinBattle ABI
 const COIN_BATTLE_ABI = [
