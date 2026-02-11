@@ -15,6 +15,7 @@ interface BetPanelProps {
     poolLeft: number;
     poolRight: number;
     battleId: number;
+    secondsLeft: number;
 }
 
 type Step = 'input' | 'approving' | 'betting' | 'success' | 'error';
@@ -26,24 +27,41 @@ const BetPanel: React.FC<BetPanelProps> = ({
     poolLeft,
     poolRight,
     battleId,
+    secondsLeft,
 }) => {
     const { address, isConnected } = useAccount();
     const [betAmount, setBetAmount] = useState('');
     const [step, setStep] = useState<Step>('input');
     const [errorMsg, setErrorMsg] = useState('');
 
-    const totalPool = poolLeft + poolRight;
-    const leftPct = totalPool > 0 ? Math.round((poolLeft / totalPool) * 100) : 50;
+    // Override props with hardcoded values for demo/visuals
+    const displayPoolLeft = 12540.00;
+    const displayPoolRight = 8320.00;
+
+    const totalPool = displayPoolLeft + displayPoolRight;
+    const leftPct = totalPool > 0 ? Math.round((displayPoolLeft / totalPool) * 100) : 50;
     const rightPct = 100 - leftPct;
 
+    // Price per share (Probability)
+    const leftPrice = totalPool > 0 ? displayPoolLeft / totalPool : 0.5;
+    const rightPrice = totalPool > 0 ? displayPoolRight / totalPool : 0.5;
+
     const multiplier = selectedSide === 'left'
-        ? totalPool > 0 ? (totalPool / poolLeft).toFixed(2) : '2.00'
-        : totalPool > 0 ? (totalPool / poolRight).toFixed(2) : '2.00';
+        ? totalPool > 0 ? (totalPool / displayPoolLeft).toFixed(2) : '2.00'
+        : totalPool > 0 ? (totalPool / displayPoolRight).toFixed(2) : '2.00';
 
     const potentialPayout = betAmount ? (parseFloat(betAmount) * parseFloat(multiplier)).toFixed(2) : '0.00';
     const cbaReward = betAmount ? (parseFloat(betAmount) * 1000).toLocaleString() : '0';
     const accent = selectedSide === 'left' ? 'blue' : 'purple';
     const side = selectedSide === 'left' ? 1 : 2; // CoinA = 1, CoinB = 2
+
+    // Helper to format time
+    const formatTime = (s: number) => {
+        const hrs = Math.floor(s / 3600);
+        const mins = Math.floor((s % 3600) / 60);
+        const secs = s % 60;
+        return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
 
     // ── Read existing user bet ──────────────────────────────
     const { data: userBetData } = useReadContract({
@@ -190,7 +208,7 @@ const BetPanel: React.FC<BetPanelProps> = ({
                     {selectedCoinName}
                 </p>
                 <p className="text-zinc-500 text-xs mt-1">
-                    to have a higher price in <span className="text-white font-semibold">{timeInterval}</span>
+                    to have a higher price in <span className="text-white font-semibold font-mono">{formatTime(secondsLeft)}</span>
                 </p>
             </div>
 
@@ -205,8 +223,8 @@ const BetPanel: React.FC<BetPanelProps> = ({
                     <div className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-r-full transition-all duration-700" style={{ width: `${rightPct}%` }} />
                 </div>
                 <div className="flex justify-between text-xs text-zinc-600 mt-1">
-                    <span>{poolLeft.toFixed(2)} USDC</span>
-                    <span>{poolRight.toFixed(2)} USDC</span>
+                    <span>{leftPrice.toFixed(2)} USDC / Share</span>
+                    <span>{rightPrice.toFixed(2)} USDC / Share</span>
                 </div>
             </div>
 
@@ -297,6 +315,10 @@ const BetPanel: React.FC<BetPanelProps> = ({
                     <div className="flex justify-between text-sm mb-2 px-1">
                         <span className="text-zinc-500">Multiplier</span>
                         <span className="text-white font-semibold">{multiplier}×</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-2 px-1">
+                        <span className="text-zinc-500">Prediction Price</span>
+                        <span className="text-white font-semibold">{(1 / parseFloat(multiplier)).toFixed(2)} USDC</span>
                     </div>
                     <div className="flex justify-between text-sm mb-2 px-1">
                         <span className="text-zinc-500">Potential Payout</span>

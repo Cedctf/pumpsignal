@@ -229,7 +229,7 @@ const BattleArena: React.FC = () => {
             {/* Bet Panel */}
             {selectedSide && (
                 <div className="animate-fade-in">
-                    <BetPanel selectedCoinName={selectedSide === 'left' ? coinA.name : coinB.name} selectedSide={selectedSide} timeInterval={'24H'} poolLeft={poolLeft} poolRight={poolRight} battleId={BATTLE_ID} />
+                    <BetPanel selectedCoinName={selectedSide === 'left' ? coinA.name : coinB.name} selectedSide={selectedSide} timeInterval={'24H'} poolLeft={poolLeft} poolRight={poolRight} battleId={BATTLE_ID} secondsLeft={secondsLeft} />
                 </div>
             )}
 
