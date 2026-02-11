@@ -1,40 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { Swords, Menu, X } from 'lucide-react';
 
 const Header: React.FC = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-black/80 backdrop-blur-md">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-                {/* Logo + App Name */}
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-[0_0_12px_rgba(34,197,94,0.3)] group-hover:shadow-[0_0_20px_rgba(34,197,94,0.5)] transition-shadow">
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-                        </svg>
+        <nav className="sticky top-0 z-50 border-b border-emerald-500/10 bg-black/80 backdrop-blur-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16 items-center">
+                    <Link href="/" className="flex items-center gap-2 group cursor-pointer">
+                        <div className="p-2 bg-emerald-500 rounded-lg group-hover:rotate-12 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                            <Swords className="w-6 h-6 text-black" />
+                        </div>
+                        <span className="text-xl font-black tracking-tighter text-emerald-500 uppercase italic">PumpFight</span>
+                    </Link>
+
+                    <div className="hidden md:flex space-x-8 items-center">
+                        <Link href="/bracket" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Tournament</Link>
+                        <Link href="/battle" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Battle</Link>
+                        <Link href="/leaderboard" className="text-sm font-medium text-zinc-300 hover:text-emerald-400 transition-colors">Top Coins</Link>
+                        <ConnectButton chainStatus="icon" accountStatus="avatar" showBalance={false} />
                     </div>
-                    <span className="text-xl font-black text-white tracking-tight">
-                        Pump<span className="text-green-400">Fight</span>
-                    </span>
-                </Link>
 
-                {/* Nav Links */}
-                <nav className="hidden md:flex items-center gap-6">
-                    <Link href="/bracket" className="text-sm text-zinc-400 hover:text-white font-semibold transition-colors">
-                        Tournament
-                    </Link>
-                    <Link href="/battle" className="text-sm text-zinc-400 hover:text-white font-semibold transition-colors">
-                        Battle
-                    </Link>
-                    <Link href="/leaderboard" className="text-sm text-zinc-400 hover:text-white font-semibold transition-colors">
-                        Top Coins
-                    </Link>
-                </nav>
-
-                {/* Connect Wallet */}
-                <ConnectButton/>
+                    <div className="md:hidden">
+                        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-emerald-500">
+                            {isMenuOpen ? <X /> : <Menu />}
+                        </button>
+                    </div>
+                </div>
             </div>
-        </header>
+
+            {/* Mobile Menu */}
+            {isMenuOpen && (
+                <div className="md:hidden bg-zinc-950 border-b border-emerald-500/20 px-4 py-4 space-y-4">
+                    <Link href="/bracket" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Tournament</Link>
+                    <Link href="/battle" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Battle</Link>
+                    <Link href="/leaderboard" className="block text-lg font-medium text-zinc-300 hover:text-emerald-400 py-2">Top Coins</Link>
+                    <div className="w-full flex justify-center py-2">
+                        <ConnectButton chainStatus="icon" accountStatus="avatar" showBalance={false} />
+                    </div>
+                </div>
+            )}
+        </nav>
     );
 };
 
