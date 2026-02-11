@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import TokenAvatar from '../TokenAvatar';
+import { fetchCurves } from '../../lib/goldsky';
+import { scoreCurves, rankCurves } from '../../lib/scoring';
+import type { Curve } from '../../types';
 
 interface BracketCoin {
     name: string;
     symbol: string;
-    icon: string;
+    uri: string;          // ipfs:// URI for TokenAvatar
 }
 
 interface Matchup {
@@ -15,35 +18,34 @@ interface Matchup {
     winner?: 'A' | 'B';
 }
 
-const COINS: BracketCoin[] = [
-    { name: 'Pepe', symbol: 'PEPE', icon: 'https://ui-avatars.com/api/?name=PE&background=4ADE80&color=fff' },
-    { name: 'Myro', symbol: 'MYRO', icon: 'https://ui-avatars.com/api/?name=MY&background=F97316&color=fff' },
-    { name: 'Wif', symbol: 'WIF', icon: 'https://ui-avatars.com/api/?name=WI&background=FCD34D&color=fff' },
-    { name: 'Mog', symbol: 'MOG', icon: 'https://ui-avatars.com/api/?name=MO&background=3B82F6&color=fff' },
-    { name: 'Bonk', symbol: 'BONK', icon: 'https://ui-avatars.com/api/?name=BO&background=EA580C&color=fff' },
-    { name: 'Gigachad', symbol: 'GIGA', icon: 'https://ui-avatars.com/api/?name=GI&background=57534E&color=fff' },
-    { name: 'Popcat', symbol: 'POPCAT', icon: 'https://ui-avatars.com/api/?name=PC&background=E879F9&color=fff' },
-    { name: 'Brett', symbol: 'BRETT', icon: 'https://ui-avatars.com/api/?name=BR&background=2563EB&color=fff' },
-];
+// Seeded PRNG so the bracket stays fixed for the whole day
+const seededRandom = (seed: number) => {
+    let s = seed;
+    return () => {
+        s = (s * 16807 + 0) % 2147483647;
+        return s / 2147483647;
+    };
+};
 
-// Quarter-finals
-const quarterFinals: Matchup[] = [
-    { id: 'qf1', coinA: COINS[0], coinB: COINS[1], winner: 'A' },
-    { id: 'qf2', coinA: COINS[2], coinB: COINS[3], winner: 'A' },
-    { id: 'qf3', coinA: COINS[4], coinB: COINS[5], winner: 'A' },
-    { id: 'qf4', coinA: COINS[6], coinB: COINS[7], winner: 'A' },
-];
+const shuffleWithSeed = <T,>(arr: T[]): T[] => {
+    // Seed from today's date → same bracket all day
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    const rng = seededRandom(seed);
 
-// Semi-finals (winners of QFs)
-const semiFinals: Matchup[] = [
-    { id: 'sf1', coinA: COINS[0], coinB: COINS[2] },
-    { id: 'sf2', coinA: COINS[4], coinB: COINS[6] },
-];
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+};
 
-// Final
-const finals: Matchup[] = [
-    { id: 'f1', coinA: { name: 'TBD', symbol: '???', icon: 'https://ui-avatars.com/api/?name=?&background=27272a&color=71717a' }, coinB: { name: 'TBD', symbol: '???', icon: 'https://ui-avatars.com/api/?name=?&background=27272a&color=71717a' } },
-];
+const TBD_COIN: BracketCoin = {
+    name: 'TBD',
+    symbol: '???',
+    uri: '',
+};
 
 interface MatchupCardProps {
     matchup: Matchup;
@@ -67,7 +69,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ matchup, roundLabel }) => {
             {/* Coin A */}
             <div className={`flex items-center gap-3 py-2 px-2 rounded-lg ${matchup.winner === 'A' ? 'bg-green-500/10 border border-green-500/20' : ''}`}>
                 <div className="relative w-8 h-8 rounded-full overflow-hidden border border-zinc-700 shrink-0">
-                    <Image src={matchup.coinA.icon} alt={matchup.coinA.name} fill className="object-cover" />
+                    <TokenAvatar uri={matchup.coinA.uri} name={matchup.coinA.name} symbol={matchup.coinA.symbol} size={32} className="rounded-full" />
                 </div>
                 <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-zinc-200 truncate">{matchup.coinA.name}</span>
@@ -86,7 +88,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ matchup, roundLabel }) => {
             {/* Coin B */}
             <div className={`flex items-center gap-3 py-2 px-2 rounded-lg ${matchup.winner === 'B' ? 'bg-green-500/10 border border-green-500/20' : ''}`}>
                 <div className="relative w-8 h-8 rounded-full overflow-hidden border border-zinc-700 shrink-0">
-                    <Image src={matchup.coinB.icon} alt={matchup.coinB.name} fill className="object-cover" />
+                    <TokenAvatar uri={matchup.coinB.uri} name={matchup.coinB.name} symbol={matchup.coinB.symbol} size={32} className="rounded-full" />
                 </div>
                 <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-zinc-200 truncate">{matchup.coinB.name}</span>
@@ -116,6 +118,74 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ matchup, roundLabel }) => {
 };
 
 const TournamentBracket: React.FC = () => {
+    const [coins, setCoins] = useState<BracketCoin[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCurves()
+            .then((curves: Curve[]) => {
+                const scored = scoreCurves(curves);
+                const ranked = rankCurves(scored, 'score');
+                const top8 = ranked.slice(0, 8);
+                const bracketCoins: BracketCoin[] = top8.map((c) => ({
+                    name: c.name,
+                    symbol: c.symbol,
+                    uri: c.uri || '',
+                }));
+                setCoins(shuffleWithSeed(bracketCoins));
+            })
+            .catch(() => setCoins([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    // Build matchups from real coins
+    const { quarterFinals, semiFinals, finals } = useMemo(() => {
+        if (coins.length < 8) {
+            return {
+                quarterFinals: [] as Matchup[],
+                semiFinals: [] as Matchup[],
+                finals: [] as Matchup[],
+            };
+        }
+
+        const qf: Matchup[] = [
+            { id: 'qf1', coinA: coins[0], coinB: coins[1], winner: 'A' },
+            { id: 'qf2', coinA: coins[2], coinB: coins[3], winner: 'A' },
+            { id: 'qf3', coinA: coins[4], coinB: coins[5], winner: 'A' },
+            { id: 'qf4', coinA: coins[6], coinB: coins[7], winner: 'A' },
+        ];
+
+        const sf: Matchup[] = [
+            { id: 'sf1', coinA: coins[0], coinB: coins[2] },
+            { id: 'sf2', coinA: coins[4], coinB: coins[6] },
+        ];
+
+        const f: Matchup[] = [
+            { id: 'f1', coinA: TBD_COIN, coinB: TBD_COIN },
+        ];
+
+        return { quarterFinals: qf, semiFinals: sf, finals: f };
+    }, [coins]);
+
+    if (loading) {
+        return (
+            <div className="w-full flex items-center justify-center py-20">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-zinc-500 text-sm">Loading tournament…</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (coins.length < 8) {
+        return (
+            <div className="w-full text-center py-20 text-zinc-500">
+                Not enough coins to populate the bracket.
+            </div>
+        );
+    }
+
     return (
         <div className="w-full overflow-x-auto pb-8">
             <div className="min-w-[900px] flex items-center justify-center gap-0">
