@@ -26,7 +26,7 @@ export default function BracketPage() {
                     <div className="flex items-center gap-4">
                         {['Quarter-Finals', 'Semi-Finals', 'Grand Final'].map((label, i) => (
                             <React.Fragment key={label}>
-                                <span className={`text-xs font-bold uppercase tracking-widest ${i === 2 ? 'text-emerald-500' : 'text-zinc-600'}`}>
+                                <span className={`text-xs font-bold uppercase tracking-widest ${i === 1 ? 'text-emerald-500' : 'text-zinc-600'}`}>
                                     {label}
                                 </span>
                                 {i < 2 && <span className="text-zinc-800">/</span>}

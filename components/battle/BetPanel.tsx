@@ -201,69 +201,94 @@ const BetPanel: React.FC<BetPanelProps> = ({
         return 'Place Bet';
     };
 
+    const accentColor = selectedSide === 'left' ? 'emerald' : 'rose';
+    const accentText = selectedSide === 'left' ? 'text-emerald-500' : 'text-rose-500';
+    const accentBg = selectedSide === 'left' ? 'bg-emerald-500' : 'bg-rose-500';
+    const accentBorder = selectedSide === 'left' ? 'border-emerald-500' : 'border-rose-500';
+    const accentShadow = selectedSide === 'left' ? 'shadow-emerald-500/20' : 'shadow-rose-500/20';
+
     return (
         <div className={`
-            w-full max-w-md mx-auto rounded-2xl p-6 border backdrop-blur-md transition-all duration-500 bg-zinc-900/70
-            ${accent === 'blue'
-                ? 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]'
-                : 'border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.15)]'
+            w-full max-w-md mx-auto rounded-3xl p-8 border backdrop-blur-xl transition-all duration-500 bg-zinc-950/90
+            ${selectedSide === 'left'
+                ? 'border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.1)]'
+                : 'border-rose-500/30 shadow-[0_0_40px_rgba(244,63,94,0.1)]'
             }
         `}>
-            <div className="text-center mb-6">
-                <p className="text-zinc-500 text-sm">You&apos;re betting on</p>
-                <p className={`text-xl font-bold mt-1 ${accent === 'blue' ? 'text-blue-400' : 'text-purple-400'}`}>
+            {/* Header */}
+            <div className="text-center mb-8 relative">
+                <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-12 w-24 h-1 bg-${accentColor}-500/20 blur-3xl rounded-full pointer-events-none`} />
+
+                <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">You are backing</h3>
+                <h2 className={`text-4xl font-black italic uppercase tracking-tighter ${accentText} drop-shadow-sm`}>
                     {selectedCoinName}
-                </p>
-                <p className="text-zinc-500 text-xs mt-1">
-                    to have a higher price in <span className="text-white font-semibold font-mono">{formatTime(secondsLeft)}</span>
-                </p>
+                </h2>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Time Remaining</span>
+                    <span className="bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-white font-mono font-bold text-xs">{formatTime(secondsLeft)}</span>
+                </div>
             </div>
 
             {/* Pool Bar */}
-            <div className="mb-6">
-                <div className="flex justify-between text-xs text-zinc-500 mb-2">
-                    <span>Pool A · {leftPct}%</span>
-                    <span>{rightPct}% · Pool B</span>
+            <div className="mb-8 bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800/50">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-3">
+                    <span className="text-emerald-500">Pool A · {leftPct}%</span>
+                    <span className="text-rose-500">{rightPct}% · Pool B</span>
                 </div>
-                <div className="w-full h-3 rounded-full bg-zinc-800 overflow-hidden flex">
-                    <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-l-full transition-all duration-700" style={{ width: `${leftPct}%` }} />
-                    <div className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-r-full transition-all duration-700" style={{ width: `${rightPct}%` }} />
+                <div className="w-full h-4 rounded-full bg-zinc-950 border border-zinc-800 overflow-hidden flex relative">
+                    <div className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-700 relative z-10" style={{ width: `${leftPct}%` }}>
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:10px_10px]" />
+                    </div>
+                    <div className="h-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)] transition-all duration-700 relative z-10" style={{ width: `${rightPct}%` }}>
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:10px_10px]" />
+                    </div>
                 </div>
-                <div className="flex justify-between text-xs text-zinc-600 mt-1">
-                    <span>{leftPrice.toFixed(2)} USDC / Share</span>
-                    <span>{rightPrice.toFixed(2)} USDC / Share</span>
+                <div className="flex justify-between text-[10px] font-mono font-medium text-zinc-400 mt-2">
+                    <span>{leftPrice.toFixed(2)} USDC/SHARE</span>
+                    <span>{rightPrice.toFixed(2)} USDC/SHARE</span>
                 </div>
             </div>
 
             {/* Wallet not connected */}
             {!isConnected ? (
-                <div className="flex flex-col items-center gap-4 py-4">
-                    <p className="text-zinc-400 text-sm">Connect your wallet to bet</p>
+                <div className="flex flex-col items-center gap-6 py-6 border-t border-zinc-800/50">
+                    <p className="text-zinc-400 text-sm font-bold uppercase tracking-wide">Connect wallet to fight</p>
                     <ConnectButton />
                 </div>
             ) : step === 'success' ? (
                 /* Success state */
-                <div className="text-center py-4">
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <div className="text-center py-6">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 animate-bounce">
+                        <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
                     </div>
-                    <p className="text-green-400 font-semibold">Bet Placed!</p>
-                    <p className="text-zinc-500 text-sm mt-1">{betAmount} USDC on {selectedCoinName}</p>
-                    <p className="text-zinc-400 text-xs mt-1">Potential payout: {potentialPayout} USDC</p>
-                    <p className="text-yellow-400 text-xs mt-1">🎉 +{cbaReward} CBA reward tokens minted!</p>
+                    <h3 className="text-2xl font-black italic uppercase text-white mb-1">Bet Secured!</h3>
+                    <p className="text-zinc-500 text-sm font-medium mb-4">{betAmount} USDC on {selectedCoinName}</p>
+
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4 mb-4">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-bold uppercase text-zinc-500">Payout Potential</span>
+                            <span className="text-emerald-400 font-mono font-bold">{potentialPayout} USDC</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold uppercase text-zinc-500">CBA Reward</span>
+                            <span className="text-yellow-500 font-mono font-bold">+{cbaReward} CBA</span>
+                        </div>
+                    </div>
+
                     {betHash && (
                         <a
                             href={`${networkConfig.baseSepolia.blockExplorer}/tx/${betHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-400 underline mt-2 inline-block"
+                            className="text-xs font-bold uppercase tracking-wider text-emerald-500 hover:text-emerald-400 underline decoration-emerald-500/30 hover:decoration-emerald-500 transition-all"
                         >
-                            View transaction ↗
+                            View Transaction ↗
                         </a>
                     )}
-                    <button onClick={handleReset} className="mt-4 text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer block mx-auto">
+
+                    <button onClick={handleReset} className="mt-8 text-xs font-bold uppercase tracking-widest text-zinc-600 hover:text-white transition-colors cursor-pointer block mx-auto">
                         Place Another Bet
                     </button>
                 </div>
@@ -271,15 +296,15 @@ const BetPanel: React.FC<BetPanelProps> = ({
                 <>
                     {/* Existing Bet Summary */}
                     {hasExistingBet && (
-                        <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex flex-shrink-0 items-center justify-center">
-                                <svg className="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <div className="mb-6 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex flex-shrink-0 items-center justify-center border border-yellow-500/20">
+                                <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-yellow-400 text-xs font-semibold uppercase tracking-wide">Current Position</p>
-                                <p className="text-white text-sm">
+                                <p className="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-0.5">Current Position</p>
+                                <p className="text-zinc-300 text-sm font-bold">
                                     {formatUnits(existingBet!.amount, USDC_DECIMALS)} USDC on {existingBet!.side === 1 ? 'Coin A' : 'Coin B'}
                                 </p>
                             </div>
@@ -288,29 +313,36 @@ const BetPanel: React.FC<BetPanelProps> = ({
 
                     {/* Wrong Side Warning */}
                     {hasExistingBet && existingBet!.side !== side && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
-                            <p className="text-red-400 text-sm">
-                                You cannot bet on both sides. <br />
-                                Switch to {existingBet!.side === 1 ? 'Coin A' : 'Coin B'} to add to your position.
+                        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-center">
+                            <p className="text-red-400 text-xs font-bold uppercase tracking-wide">
+                                You cannot bet on both sides.
+                            </p>
+                            <p className="text-red-500/60 text-[10px] uppercase font-bold mt-1">
+                                Switch sides to add to your position.
                             </p>
                         </div>
                     )}
 
                     {/* Bet input */}
-                    <div className={`mb-4 ${hasExistingBet && existingBet!.side !== side ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <label className="text-xs text-zinc-500 mb-2 block">
-                            {hasExistingBet ? 'Add to Bet (USDC)' : 'Bet Amount (USDC)'}
+                    <div className={`mb-6 ${hasExistingBet && existingBet!.side !== side ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2 block pl-1">
+                            {hasExistingBet ? 'Increse Position (USDC)' : 'Wager Amount (USDC)'}
                         </label>
-                        <div className="relative">
+                        <div className="relative group">
                             <input
                                 type="number" min="0" step="1" value={betAmount}
                                 onChange={(e) => setBetAmount(e.target.value)} placeholder="0.00"
                                 disabled={isProcessing}
-                                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white text-lg font-semibold placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all disabled:opacity-50"
+                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 px-5 text-white text-2xl font-black italic focus:outline-none focus:border-zinc-700 transition-all disabled:opacity-50 placeholder-zinc-800"
                             />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1.5">
                                 {[10, 50, 100].map((amt) => (
-                                    <button key={amt} onClick={() => setBetAmount(String(amt))} disabled={isProcessing} className="px-2 py-1 text-[10px] rounded-md bg-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-600 transition-colors cursor-pointer disabled:opacity-50">
+                                    <button
+                                        key={amt}
+                                        onClick={() => setBetAmount(String(amt))}
+                                        disabled={isProcessing}
+                                        className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 border border-zinc-700/50 hover:border-zinc-600 transition-all cursor-pointer disabled:opacity-50"
+                                    >
                                         {amt}
                                     </button>
                                 ))}
@@ -318,55 +350,54 @@ const BetPanel: React.FC<BetPanelProps> = ({
                         </div>
                     </div>
 
-                    <p className="text-[10px] text-zinc-500 text-center mb-4 italic">
-                        *50% of deposit is added to the pool, 50% goes to the Treasury.
+                    <p className="text-[10px] text-zinc-600 text-center mb-6 font-medium">
+                        *50% TO POOL · 50% TO TREASURY · WINNER TAKES ALL
                     </p>
 
                     {/* Stats */}
-                    <div className="flex justify-between text-sm mb-2 px-1">
-                        <span className="text-zinc-500">Multiplier</span>
-                        <span className="text-white font-semibold">{multiplier}×</span>
-                    </div>
-                    <div className="flex justify-between text-sm mb-2 px-1">
-                        <span className="text-zinc-500">Prediction Price</span>
-                        <span className="text-white font-semibold">{(1 / parseFloat(multiplier)).toFixed(2)} USDC</span>
-                    </div>
-                    <div className="flex justify-between text-sm mb-2 px-1">
-                        <span className="text-zinc-500">Potential Payout</span>
-                        <span className="text-green-400 font-semibold">{potentialPayout} USDC</span>
-                    </div>
-                    <div className="flex justify-between text-sm mb-6 px-1">
-                        <span className="text-zinc-500">CBA Reward</span>
-                        <span className="text-yellow-400 font-semibold">+{cbaReward} CBA</span>
+                    <div className="space-y-3 mb-8 bg-zinc-900/30 p-4 rounded-2xl border border-zinc-800/30">
+                        <div className="flex justify-between text-sm px-1">
+                            <span className="text-zinc-500 font-bold uppercase text-xs tracking-wider pt-0.5">Multiplier</span>
+                            <span className="text-white font-black italic">{multiplier}×</span>
+                        </div>
+                        <div className="flex justify-between text-sm px-1">
+                            <span className="text-zinc-500 font-bold uppercase text-xs tracking-wider pt-0.5">Est. Payout</span>
+                            <span className={`${accentText} font-black italic`}>{potentialPayout} USDC</span>
+                        </div>
+                        <div className="flex justify-between text-sm px-1 pt-2 border-t border-dashed border-zinc-800">
+                            <span className="text-zinc-500 font-bold uppercase text-xs tracking-wider pt-0.5">CBA Reward</span>
+                            <span className="text-yellow-500 font-black italic">+{cbaReward} CBA</span>
+                        </div>
                     </div>
 
                     {/* Place Bet button */}
                     <button onClick={handlePlaceBet} disabled={!betAmount || parseFloat(betAmount) <= 0 || isProcessing || (hasExistingBet && existingBet!.side !== side)}
-                        className={`w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed
-                            ${accent === 'blue'
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]'
-                                : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)]'
-                            }`}
+                        className={`w-full py-4 rounded-xl font-black text-lg italic uppercase tracking-tighter transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transform active:scale-95 group relative overflow-hidden
+                            ${accentBg} text-black hover:brightness-110 shadow-lg ${accentShadow}
+                        `}
                     >
-                        {getButtonLabel()}
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            {getButtonLabel()}
+                            {!isProcessing && <span className="text-xl">→</span>}
+                        </span>
                     </button>
 
                     {/* Error */}
                     {step === 'error' && (
-                        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
-                            <p className="text-red-400 text-sm font-medium">{errorMsg || 'Transaction failed. Please try again.'}</p>
-                            <button onClick={handleReset} className="mt-2 text-xs text-zinc-500 hover:text-zinc-300 underline cursor-pointer">
-                                Try again
+                        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-center animate-shake">
+                            <p className="text-red-400 text-xs font-bold uppercase tracking-wide">{errorMsg || 'Transaction Failed'}</p>
+                            <button onClick={handleReset} className="mt-1 text-[10px] text-zinc-500 hover:text-zinc-300 underline cursor-pointer font-bold uppercase">
+                                Retry
                             </button>
                         </div>
                     )}
 
                     {/* Processing status */}
                     {isProcessing && (
-                        <div className="mt-4 flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-xs text-zinc-400">
-                                {isApprovePending || isApproveConfirming ? 'Approving USDC...' : 'Placing bet...'}
+                        <div className="mt-4 flex items-center justify-center gap-3">
+                            <div className={`w-4 h-4 border-2 ${accentBorder} border-t-transparent rounded-full animate-spin`} />
+                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                                {isApprovePending || isApproveConfirming ? 'Confirm Approval...' : 'Confirming Bet...'}
                             </span>
                         </div>
                     )}

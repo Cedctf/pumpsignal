@@ -83,7 +83,7 @@ const MatchupCard: React.FC<MatchupCardProps> = ({ matchup, roundLabel, readOnly
         `}>
             {/* Round label */}
             <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-600 mb-3 flex justify-between">
-                <span className={isGrandFinal ? 'text-emerald-500 animate-pulse' : ''}>{roundLabel}</span>
+                <span className={roundLabel === 'Semi-Final' ? 'text-emerald-500 animate-pulse' : ''}>{roundLabel}</span>
                 {readOnly && <span className="text-emerald-500/50">Finished</span>}
             </div>
 
