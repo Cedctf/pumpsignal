@@ -121,7 +121,14 @@ contract CoinBattle {
         require(block.timestamp < b.endTime, "Betting closed");
         require(_side == Side.CoinA || _side == Side.CoinB, "Invalid side");
         require(_amount > 0, "Amount must be > 0");
-        require(bets[_battleId][msg.sender].amount == 0, "Already bet");
+
+        // If user already bet, ensure they stick to the same side
+        if (bets[_battleId][msg.sender].amount > 0) {
+            require(
+                bets[_battleId][msg.sender].side == _side,
+                "Cannot switch sides"
+            );
+        }
 
         // Transfer USDC from user to this contract
         require(
@@ -129,11 +136,17 @@ contract CoinBattle {
             "Transfer failed"
         );
 
-        bets[_battleId][msg.sender] = Bet({
-            side: _side,
-            amount: _amount,
-            claimed: false
-        });
+        Bet storage userBet = bets[_battleId][msg.sender];
+
+        // Initialize side if this is the first bet
+        if (userBet.amount == 0) {
+            userBet.side = _side;
+        }
+
+        // Accumulate amount
+        userBet.amount += _amount;
+        // Ensure not claimed (though should be false anyway for open battle)
+        userBet.claimed = false;
 
         if (_side == Side.CoinA) {
             b.totalPoolA += _amount;
@@ -142,6 +155,7 @@ contract CoinBattle {
         }
 
         // Mint reward tokens to the bettor (rewardRate:1 with bet)
+        // Mint based on the *new* amount being added
         rewardToken.mint(msg.sender, _amount * rewardRate);
 
         emit BetPlaced(_battleId, msg.sender, _side, _amount);

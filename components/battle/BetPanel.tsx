@@ -216,19 +216,6 @@ const BetPanel: React.FC<BetPanelProps> = ({
                     <p className="text-zinc-400 text-sm">Connect your wallet to bet</p>
                     <ConnectButton />
                 </div>
-            ) : hasExistingBet ? (
-                /* Already bet */
-                <div className="text-center py-4">
-                    <div className="w-12 h-12 rounded-full bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                        </svg>
-                    </div>
-                    <p className="text-yellow-400 font-semibold">Already Bet</p>
-                    <p className="text-zinc-500 text-sm mt-1">
-                        {formatUnits(existingBet!.amount, USDC_DECIMALS)} USDC on {existingBet!.side === 1 ? 'Coin A' : 'Coin B'}
-                    </p>
-                </div>
             ) : step === 'success' ? (
                 /* Success state */
                 <div className="text-center py-4">
@@ -252,14 +239,43 @@ const BetPanel: React.FC<BetPanelProps> = ({
                         </a>
                     )}
                     <button onClick={handleReset} className="mt-4 text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2 transition-colors cursor-pointer block mx-auto">
-                        Back
+                        Place Another Bet
                     </button>
                 </div>
             ) : (
                 <>
+                    {/* Existing Bet Summary */}
+                    {hasExistingBet && (
+                        <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex flex-shrink-0 items-center justify-center">
+                                <svg className="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-yellow-400 text-xs font-semibold uppercase tracking-wide">Current Position</p>
+                                <p className="text-white text-sm">
+                                    {formatUnits(existingBet!.amount, USDC_DECIMALS)} USDC on {existingBet!.side === 1 ? 'Coin A' : 'Coin B'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Wrong Side Warning */}
+                    {hasExistingBet && existingBet!.side !== side && (
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+                            <p className="text-red-400 text-sm">
+                                You cannot bet on both sides. <br />
+                                Switch to {existingBet!.side === 1 ? 'Coin A' : 'Coin B'} to add to your position.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Bet input */}
-                    <div className="mb-4">
-                        <label className="text-xs text-zinc-500 mb-2 block">Bet Amount (USDC)</label>
+                    <div className={`mb-4 ${hasExistingBet && existingBet!.side !== side ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className="text-xs text-zinc-500 mb-2 block">
+                            {hasExistingBet ? 'Add to Bet (USDC)' : 'Bet Amount (USDC)'}
+                        </label>
                         <div className="relative">
                             <input
                                 type="number" min="0" step="1" value={betAmount}
@@ -292,7 +308,7 @@ const BetPanel: React.FC<BetPanelProps> = ({
                     </div>
 
                     {/* Place Bet button */}
-                    <button onClick={handlePlaceBet} disabled={!betAmount || parseFloat(betAmount) <= 0 || isProcessing}
+                    <button onClick={handlePlaceBet} disabled={!betAmount || parseFloat(betAmount) <= 0 || isProcessing || (hasExistingBet && existingBet!.side !== side)}
                         className={`w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed
                             ${accent === 'blue'
                                 ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]'

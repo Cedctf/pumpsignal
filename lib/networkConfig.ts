@@ -11,7 +11,7 @@ export const networkConfig = {
             MOCK_USDC: '0x0565ea3C8b2700e0b35197dF0258eA3A177930B9', // Deployed on Base Sepolia (6 decimals)
             CBA: '0x9812E5fd8c1fFD85ea3e81724596c9025C80D171', // CBA Token (18 decimals)
             ZERO: '0xeDcAAf9De66528B73cA6dE16A1419658f4E3D873', // ZERO Token (18 decimals)
-            COIN_BATTLE: '0xeEB323B5ba1001453aeFf3f28623D8832A82e146', // CoinBattle contract
+            COIN_BATTLE: '0x68b817C0056B815e9280de759B33835CDabff6C4', // CoinBattle contract
         },
     },
 } as const;
