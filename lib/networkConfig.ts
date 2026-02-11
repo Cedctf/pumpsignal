@@ -57,3 +57,97 @@ export const MOCK_USDC_ABI = [
         outputs: [{ name: '', type: 'string' }],
     },
 ] as const;
+
+// ABI for ERC20 approve + allowance (needed before placing a bet)
+export const ERC20_APPROVE_ABI = [
+    {
+        name: 'approve',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: 'spender', type: 'address' },
+            { name: 'amount', type: 'uint256' },
+        ],
+        outputs: [{ name: '', type: 'bool' }],
+    },
+    {
+        name: 'allowance',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' },
+        ],
+        outputs: [{ name: '', type: 'uint256' }],
+    },
+] as const;
+
+// ABI for the CoinBattle contract
+export const COIN_BATTLE_ABI = [
+    {
+        name: 'placeBet',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [
+            { name: '_battleId', type: 'uint256' },
+            { name: '_side', type: 'uint8' },
+            { name: '_amount', type: 'uint256' },
+        ],
+        outputs: [],
+    },
+    {
+        name: 'getBattle',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: '_battleId', type: 'uint256' }],
+        outputs: [
+            {
+                name: '',
+                type: 'tuple',
+                components: [
+                    { name: 'coinA', type: 'string' },
+                    { name: 'coinB', type: 'string' },
+                    { name: 'endTime', type: 'uint256' },
+                    { name: 'totalPoolA', type: 'uint256' },
+                    { name: 'totalPoolB', type: 'uint256' },
+                    { name: 'winner', type: 'uint8' },
+                    { name: 'status', type: 'uint8' },
+                ],
+            },
+        ],
+    },
+    {
+        name: 'getUserBet',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [
+            { name: '_battleId', type: 'uint256' },
+            { name: '_user', type: 'address' },
+        ],
+        outputs: [
+            {
+                name: '',
+                type: 'tuple',
+                components: [
+                    { name: 'side', type: 'uint8' },
+                    { name: 'amount', type: 'uint256' },
+                    { name: 'claimed', type: 'bool' },
+                ],
+            },
+        ],
+    },
+    {
+        name: 'battleCount',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'uint256' }],
+    },
+    {
+        name: 'rewardRate',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'uint256' }],
+    },
+] as const;

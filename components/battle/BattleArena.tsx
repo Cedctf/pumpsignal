@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useReadContract } from 'wagmi';
+import { formatUnits } from 'viem';
 import CoinCard, { CoinData } from './CoinCard';
 import BetPanel from './BetPanel';
 import { fetchCurves } from '../../lib/goldsky';
 import { scoreCurves, rankCurves } from '../../lib/scoring';
+import { networkConfig, COIN_BATTLE_ABI } from '../../lib/networkConfig';
 import type { Curve } from '../../types';
+
+const BATTLE_ADDRESS = networkConfig.baseSepolia.contracts.COIN_BATTLE as `0x${string}`;
+const BATTLE_ID = 0; // first battle
 
 // ── Helpers ───────────────────────────────────────────────
 
@@ -97,6 +103,17 @@ const BattleArena: React.FC = () => {
     const [selectedSide, setSelectedSide] = useState<'left' | 'right' | null>(null);
     const [secondsLeft, setSecondsLeft] = useState(getSecondsToMidnight());
 
+    // Read on-chain battle data
+    const { data: battleData } = useReadContract({
+        address: BATTLE_ADDRESS,
+        abi: COIN_BATTLE_ABI,
+        functionName: 'getBattle',
+        args: [BigInt(BATTLE_ID)],
+        query: { refetchInterval: 10000 }, // refresh every 10s
+    });
+
+    const battle = battleData as { coinA: string; coinB: string; endTime: bigint; totalPoolA: bigint; totalPoolB: bigint; winner: number; status: number } | undefined;
+
     // Fetch real coins
     useEffect(() => {
         fetchCurves()
@@ -142,8 +159,9 @@ const BattleArena: React.FC = () => {
     const coinA = allCoins.get(resolvedLeft);
     const coinB = allCoins.get(resolvedRight);
 
-    const poolLeft = 124.5;
-    const poolRight = 78.2;
+    // Pool values from on-chain data (USDC has 6 decimals)
+    const poolLeft = battle ? Number(formatUnits(battle.totalPoolA, 6)) : 0;
+    const poolRight = battle ? Number(formatUnits(battle.totalPoolB, 6)) : 0;
 
     if (loading) {
         return (
@@ -211,7 +229,7 @@ const BattleArena: React.FC = () => {
             {/* Bet Panel */}
             {selectedSide && (
                 <div className="animate-fade-in">
-                    <BetPanel selectedCoinName={selectedSide === 'left' ? coinA.name : coinB.name} selectedSide={selectedSide} timeInterval={'24H'} poolLeft={poolLeft} poolRight={poolRight} />
+                    <BetPanel selectedCoinName={selectedSide === 'left' ? coinA.name : coinB.name} selectedSide={selectedSide} timeInterval={'24H'} poolLeft={poolLeft} poolRight={poolRight} battleId={BATTLE_ID} />
                 </div>
             )}
 
