@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { Leaf, ChevronDown, Rocket, User, Bot, LayoutGrid, Heart, DollarSign, Activity, Image as ImageIcon } from 'lucide-react';
+import { Leaf, ChevronDown, User } from 'lucide-react';
 import { fetchCurves } from '../lib/goldsky';
 import { Curve } from '../types';
+import TokenAvatar from '../components/TokenAvatar';
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -26,21 +27,6 @@ const formatMarketCap = (priceUsd: string): string => {
     return mc.toFixed(2);
 };
 
-const ICON_TYPES = ['rocket', 'person', 'zero', 'cartoon', 'bot', 'kids', 'abstract', 'gold', 'coin'] as const;
-const BG_COLORS = [
-    'bg-blue-900', 'bg-blue-600', 'bg-yellow-400', 'bg-red-500',
-    'bg-emerald-700', 'bg-gray-800', 'bg-purple-900', 'bg-yellow-700',
-    'bg-amber-900', 'bg-indigo-800', 'bg-rose-700', 'bg-teal-700',
-];
-
-const getVisuals = (id: string) => {
-    const hash = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    return {
-        imgType: ICON_TYPES[hash % ICON_TYPES.length],
-        imgColor: BG_COLORS[hash % BG_COLORS.length],
-    };
-};
-
 // ── Component ────────────────────────────────────────────
 
 const RobinPumpInterface = () => {
@@ -51,21 +37,6 @@ const RobinPumpInterface = () => {
         fetchCurves,
         { refreshInterval: 3000 }
     );
-
-    const renderIcon = (type: string) => {
-        switch (type) {
-            case 'rocket': return <Rocket size={48} className="text-white drop-shadow-lg" />;
-            case 'person': return <User size={48} className="text-white drop-shadow-lg" />;
-            case 'zero': return <span className="text-5xl font-black text-black">0</span>;
-            case 'cartoon': return <LayoutGrid size={48} className="text-gray-800" />;
-            case 'bot': return <Bot size={48} className="text-white" />;
-            case 'kids': return <Heart size={48} className="text-pink-400" />;
-            case 'abstract': return <Activity size={48} className="text-cyan-400" />;
-            case 'gold': return <DollarSign size={48} className="text-yellow-200" />;
-            case 'coin': return <div className="rounded-full border-4 border-yellow-500 w-12 h-12 flex items-center justify-center text-yellow-500 font-bold">$</div>;
-            default: return <ImageIcon size={48} className="text-gray-500" />;
-        }
-    };
 
     // Sort based on active filter
     const sortedCurves = curves ? [...curves].sort((a, b) => {
@@ -158,7 +129,6 @@ const RobinPumpInterface = () => {
 
                     {/* Data cards */}
                     {sortedCurves.map((curve) => {
-                        const { imgType, imgColor } = getVisuals(curve.id);
                         const progress = curve.graduated
                             ? 100
                             : Math.min((Number(curve.totalVolumeEth) / 4) * 100, 100);
@@ -170,12 +140,13 @@ const RobinPumpInterface = () => {
                                 className="bg-[#111] hover:bg-[#161616] border border-gray-900/50 rounded-xl p-4 transition-all duration-200 cursor-pointer group flex gap-4 h-[180px]"
                             >
                                 {/* Card Image Area */}
-                                <div className={`w-[140px] h-full flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center ${imgColor} relative`}>
-                                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                                    <div className="z-10 transform group-hover:scale-110 transition-transform duration-300">
-                                        {renderIcon(imgType)}
-                                    </div>
-                                </div>
+                                <TokenAvatar
+                                    uri={curve.uri}
+                                    name={curve.name}
+                                    symbol={curve.symbol}
+                                    size={140}
+                                    className="rounded-lg"
+                                />
 
                                 {/* Card Content Area */}
                                 <div className="flex flex-col justify-between flex-grow min-w-0">
