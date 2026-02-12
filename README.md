@@ -4,9 +4,10 @@
 [![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
 
-  <video src="./public/readme/demo.mp4" width="100%" controls autoplay loop muted>
-    Your browser does not support the video tag.
-  </video>
+<div align="center">
+  🎬 **[Watch the Demo Video →](https://drive.google.com/drive/folders/1QliJR2JuRbaQJujRCQUMQB9uEcQIccke?usp=sharing)**
+  
+  <br/>
   
 
 
