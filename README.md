@@ -25,16 +25,24 @@ Every participation in a Pump Fight triggers a dual-atomic execution:
 
 ## ⚙️ Technical Architecture
 
-### 1. The Battle Engine (`BattlePool.sol`)
-Our smart contracts on **Base** manage the escrow of the "Pool Half." The contract tracks positions by wallet and enforces the redistribution of the losing side's stake to the winners upon settlement.
+### 1. The Battle Engine (`CoinBattle.sol`)
+**Contract Address:** [`0x0FA69EaDa5b2211B9E217C5C63b639B3a58bD3c0`](https://sepolia.basescan.org/address/0x0fa69eada5b2211b9e217c5c63b639b3a58bd3c0)
 
-### 2. The Orchestration Layer
-The frontend coordinates two distinct blockchain interactions into a single user flow. By using Base’s low-fee environment, we make this dual-transaction model economically viable for retail participants.
+Our smart contracts on **Base Sepolia** manage the betting logic and prize pools. The `CoinBattle` contract:
+* **Escrows Stakes:** Holds wagered ETH/USDC during the battle.
+* **Tracks Positions:** Records user bets on specific coin outcomes (Coin A vs Coin B).
+* **Automated Payouts:** Distributes the total pot to the winning side's stakers upon battle resolution.
 
-### 3. The Oracle & Indexer
-* **Snapshot A:** Prices recorded at `Battle_Start`.
-* **Snapshot B:** Prices recorded at `Battle_End`.
-* **Settlement Logic:** $\Delta\% = \frac{(P_{final} - P_{initial})}{P_{initial}}$. The token with the superior relative growth wins the pool.
+### 2. The Data Layer (Goldsky Indexer)
+We utilize a custom **Goldsky Subgraph** to index real-time data from the Pump.fun bonding curves on Solana. This allows us to:
+* **Fetch Curves:** Retrieve live token metrics (volume, market cap, creation time).
+* **Score & Rank:** Our proprietary scoring engine (`scoring.ts`) normalizes velocity and volume to identify the hottest active tokens for battle pairing.
+
+### 3. The Orchestration Layer (Frontend)
+The Next.js frontend acts as the bridge between chains:
+* **Visualization:** Displays real-time "Live Battles" with health bars driven by bonding curve progress.
+* **Interaction:** Users connect their Base wallet to place bets while watching Solana market data, creating a seamless cross-chain experience.
+* **Settlement Logic:** $\Delta\% = \frac{(P_{final} - P_{initial})}{P_{initial}}$. The token with the superior relative growth wins the round.
 
 ---
 
