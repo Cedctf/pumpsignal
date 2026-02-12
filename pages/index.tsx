@@ -140,7 +140,7 @@ const App = () => {
               {liveBattles.map((battle) => (
                 <div key={battle.id} className="relative group p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all overflow-hidden">
                   <div className="absolute top-0 right-0 p-4">
-                    <span className="text-xs font-mono text-zinc-500">POOL: <span className="text-emerald-400">{battle.pot}</span></span>
+
                   </div>
 
                   <div className="flex justify-between items-center mb-12 mt-4 relative">
