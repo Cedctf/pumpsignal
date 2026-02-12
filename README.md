@@ -4,7 +4,7 @@
 [![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
 
-<div align="center">
+<div>
   🎬 **[Watch the Demo Video →](https://drive.google.com/drive/folders/1QliJR2JuRbaQJujRCQUMQB9uEcQIccke?usp=sharing)**
   
   <br/>
