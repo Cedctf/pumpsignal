@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import useSWR from 'swr';
 import {
   Swords,
   TrendingUp,
@@ -12,25 +13,77 @@ import {
   Users,
   Skull
 } from 'lucide-react';
+import { fetchCurves } from '../lib/goldsky';
+import { scoreCurves } from '../lib/scoring';
+import { Curve } from '../types';
 
 const App = () => {
-  // Mock data for battles
-  const liveBattles = [
-    {
-      id: 1,
-      coinA: { name: 'PEPE-PUMP', symbol: 'PEPE', health: 85, color: 'text-green-500' },
-      coinB: { name: 'DOGE-PUMP', symbol: 'DOGE', health: 42, color: 'text-orange-500' },
-      pot: '12.5 SOL',
-      timer: '02:45'
-    },
-    {
-      id: 2,
-      coinA: { name: 'SHIB-FIGHT', symbol: 'SHIB', health: 12, color: 'text-red-500' },
-      coinB: { name: 'KEK-PUNCH', symbol: 'KEK', health: 98, color: 'text-emerald-400' },
-      pot: '5.2 SOL',
-      timer: '00:15'
+  // Fetch real data
+  const { data: curves, isLoading } = useSWR<Curve[]>(
+    'latestCurves',
+    fetchCurves,
+    { refreshInterval: 5000 }
+  );
+
+  // Process data for battles
+  const liveBattles = React.useMemo(() => {
+    if (!curves || curves.length < 2) return [];
+
+    // Score and sort to find top active tokens
+    const scored = scoreCurves(curves);
+    const sorted = scored
+      .filter(c => !c.isDead && c.volumeEth > 0) // Filter dead/inactive
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 4); // Take top 4
+
+    // Create pairs for battles
+    const battles = [];
+    for (let i = 0; i < sorted.length; i += 2) {
+      if (i + 1 < sorted.length) {
+        const coinA = sorted[i];
+        const coinB = sorted[i + 1];
+
+        // Calc health based on bonding curve progress (approx)
+        const getHealth = (c: typeof coinA) => {
+          const progress = c.graduated
+            ? 100
+            : Math.min((Number(c.totalVolumeEth) / 4) * 100, 100);
+          return Math.round(progress);
+        };
+
+        // Format time ago
+        const getTime = (timestamp: string) => {
+          const diff = Date.now() - Number(timestamp) * 1000;
+          const mins = Math.floor(diff / 60000);
+          const hrs = Math.floor(mins / 60);
+          if (hrs > 0) return `${hrs}h ${mins % 60}m`;
+          return `${mins}m`;
+        };
+
+        // Calculate combined volume for "Pot"
+        const pot = (Number(coinA.totalVolumeEth) + Number(coinB.totalVolumeEth)).toFixed(2);
+
+        battles.push({
+          id: i,
+          coinA: {
+            name: coinA.name,
+            symbol: coinA.symbol,
+            health: getHealth(coinA),
+            color: 'text-emerald-500' // Winner dynamic color? For now static
+          },
+          coinB: {
+            name: coinB.name,
+            symbol: coinB.symbol,
+            health: getHealth(coinB),
+            color: 'text-red-500'
+          },
+          pot: `${pot} ETH`,
+          timer: getTime(coinA.createdAt) // Using age as timer/duration
+        });
+      }
     }
-  ];
+    return battles;
+  }, [curves]);
 
   return (
     <>
@@ -49,7 +102,7 @@ const App = () => {
               The first combat arena for Pump.fun tokens. Stake your favorite coins, watch them battle in real-time liquidity duels, and claim the massive prize pools.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/battle">
+              <Link href="/robin-pump">
                 <button className="group px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-lg rounded-2xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 w-full sm:w-auto">
                   ENTER THE RING <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
@@ -71,6 +124,18 @@ const App = () => {
               <h2 className="text-xl font-bold uppercase tracking-wider text-emerald-500">Live Battles</h2>
             </div>
 
+            {isLoading && (
+              <div className="text-center py-20 text-zinc-500 animate-pulse">
+                INITIALIZING BATTLEGROUND...
+              </div>
+            )}
+
+            {!isLoading && liveBattles.length === 0 && (
+              <div className="text-center py-20 text-zinc-500">
+                NO ACTIVE BATTLES DETECTED.
+              </div>
+            )}
+
             <div className="grid md:grid-cols-2 gap-8">
               {liveBattles.map((battle) => (
                 <div key={battle.id} className="relative group p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all overflow-hidden">
@@ -82,9 +147,9 @@ const App = () => {
                     {/* Coin A */}
                     <div className="text-center w-1/3">
                       <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-800 border-2 border-emerald-500 flex items-center justify-center font-black text-xl italic overflow-hidden">
-                        {battle.coinA.symbol}
+                        {battle.coinA.symbol.slice(0, 4)}
                       </div>
-                      <h3 className="font-black text-xs uppercase text-zinc-300">{battle.coinA.name}</h3>
+                      <h3 className="font-black text-xs uppercase text-zinc-300 truncate px-2">{battle.coinA.name}</h3>
                     </div>
 
                     {/* VS */}
@@ -97,10 +162,10 @@ const App = () => {
 
                     {/* Coin B */}
                     <div className="text-center w-1/3">
-                      <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center font-black text-xl italic">
-                        {battle.coinB.symbol}
+                      <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center font-black text-xl italic overflow-hidden">
+                        {battle.coinB.symbol.slice(0, 4)}
                       </div>
-                      <h3 className="font-black text-xs uppercase text-zinc-300">{battle.coinB.name}</h3>
+                      <h3 className="font-black text-xs uppercase text-zinc-300 truncate px-2">{battle.coinB.name}</h3>
                     </div>
                   </div>
 
@@ -115,7 +180,7 @@ const App = () => {
                     </div>
                     <div className="flex justify-between text-[10px] font-mono text-zinc-500 uppercase tracking-tighter">
                       <span>HP: {battle.coinA.health}%</span>
-                      <span>TIME REMAINING: {battle.timer}</span>
+                      <span>DURATION: {battle.timer}</span>
                       <span>HP: {battle.coinB.health}%</span>
                     </div>
                   </div>
