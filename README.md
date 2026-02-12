@@ -4,10 +4,27 @@
 [![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
 
-<div>
+<!-- <div>
+  🎬 **[Watch the Demo Video →](https://drive.google.com/drive/folders/1QliJR2JuRbaQJujRCQUMQB9uEcQIccke?usp=sharing)**
+  
+  <br/> -->
+
+  <div align="center">
   🎬 **[Watch the Demo Video →](https://drive.google.com/drive/folders/1QliJR2JuRbaQJujRCQUMQB9uEcQIccke?usp=sharing)**
   
   <br/>
+
+  <img src="public/readme/landing.png" alt="Landing Page" width="100%" />
+  
+  <br/>
+  
+  <img src="public/readme/tournament.png" alt="Tournament Bracket" width="48%" />
+  <img src="public/readme/bet.png" alt="Betting Interface" width="48%" />
+  
+  <br/>
+  
+  <img src="public/readme/portfolio.png" alt="Portfolio" width="100%" />
+</div>
   
 
 
