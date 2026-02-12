@@ -3,14 +3,13 @@
 [![Network: Base](https://img.shields.io/badge/Network-Base-blue.svg)](https://base.org)
 [![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
-<div align="center">
+
   <video src="./public/readme/demo.mp4" width="100%" controls autoplay loop muted>
     Your browser does not support the video tag.
   </video>
   
 
 
-</div>
 
 > **Stop Trading. Start Fighting.** > Pump Fight is the world’s first liquidity orchestration layer that synchronizes capital through high-stakes competitive battles.
 
