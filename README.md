@@ -4,6 +4,10 @@
 [![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
 <div align="center">
+  <video src="public/readme/demo.mp4" width="100%" controls autoplay loop muted></video>
+  
+  <br/>
+
   <img src="public/readme/landing.png" alt="Landing Page" width="100%" />
   
   <br/>
@@ -15,10 +19,6 @@
   
   <img src="public/readme/bet.png" alt="Betting Interface" width="48%" />
   <img src="public/readme/leaderboard.png" alt="Leaderboard" width="48%" />
-  
-  <br/>
-  
-  <img src="public/readme/portfolio.png" alt="Portfolio" width="100%" />
 </div>
 
 > **Stop Trading. Start Fighting.** > Pump Fight is the world’s first liquidity orchestration layer that synchronizes capital through high-stakes competitive battles.
