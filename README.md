@@ -1,40 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🥊 Pump Fight: The Liquidity Combat Layer
 
-## Getting Started
+[![Network: Base](https://img.shields.io/badge/Network-Base-blue.svg)](https://base.org)
+[![Platform: RobinPump](https://img.shields.io/badge/Protocol-RobinPump-green.svg)](https://robinpump.com)
 
-First, run the development server:
+> **Stop Trading. Start Fighting.** > Pump Fight is the world’s first liquidity orchestration layer that synchronizes capital through high-stakes competitive battles.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🌪️ The Problem: Liquidity Entropy
+On RobinPump, capital is chaotic. Liquidity is fragmented across a thousand "shitcoins," leading to:
+* **Asynchronous Decay:** Buying pressure is scattered, meaning bonding curves never reach escape velocity.
+* **Attention Deficit:** Without a central focal point, communities dissolve within minutes.
+* **Passive Speculation:** Users bet on outcomes rather than driving them.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 🔥 The Solution: Pump Fight
+Pump Fight transforms passive trading into a coordinated **Liquidity Event**. We introduce scheduled battles between tokens where the community's capital is weaponized to drive the curve.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### The "Split-Bet" Primitive
+Every participation in a Pump Fight triggers a dual-atomic execution:
+1. **50% Strike (Market Half):** Dispatched directly to the RobinPump bonding curve. This is immediate buy pressure.
+2. **50% Stake (Pool Half):** Escrowed in the Pump Fight Battle Pool. This is the competitive "prize" at stake.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Technical Architecture
 
-## Learn More
+### 1. The Battle Engine (`BattlePool.sol`)
+Our smart contracts on **Base** manage the escrow of the "Pool Half." The contract tracks positions by wallet and enforces the redistribution of the losing side's stake to the winners upon settlement.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. The Orchestration Layer
+The frontend coordinates two distinct blockchain interactions into a single user flow. By using Base’s low-fee environment, we make this dual-transaction model economically viable for retail participants.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+### 3. The Oracle & Indexer
+* **Snapshot A:** Prices recorded at `Battle_Start`.
+* **Snapshot B:** Prices recorded at `Battle_End`.
+* **Settlement Logic:** $\Delta\% = \frac{(P_{final} - P_{initial})}{P_{initial}}$. The token with the superior relative growth wins the pool.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛡️ Anti-Manipulation & Security
+To prevent "whale-sniping" and price manipulation:
+* **Time-Bound Windows:** Battles have strict entry and exit timestamps.
+* **Wallet Caps:** Limits the maximum pool-influence per participant.
+* **Non-Custodial:** Funds are held in audited escrow contracts, never by the platform.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## 🚀 Future Roadmap
+- [ ] **Dynamic Multi-Battles:** 4-way "Royal Rumble" token fights.
+- [ ] **Power-Ups:** Use specific NFTs to boost your "Pool Half" payout multiplier.
+- [ ] **API for Launchpads:** Allowing other pump-style platforms to plug into the Fight Engine.
+
+---
+
+*Built for the degens. Powered by Base. Optimized for RobinPump.*
